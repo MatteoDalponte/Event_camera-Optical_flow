@@ -5,6 +5,34 @@ import time
 
 Ne = 2500   #grandezza degli eventi da considerare ad ogni iterazione per stimare i parametri theta
 
+def dirac_delta(x, y, x_warped, y_warped):
+	delta = (x - x_warped) + (y - y_warped)
+	if delta == 0:
+		return 1
+	else:
+		return 0
+
+
+def generateIWE(warped_event):
+	iwe = np.zeros((180, 240), dtype=np.int32)
+
+	# Per ogni posizione dell'immagine
+	for i in range(240):
+		for j in range(180):
+			point = 0
+
+			# Per ogni evento
+			for a in range(len(warped_event)):
+				point += 1 * dirac_delta(i, warped_event[a, 1], j, warped_event[a, 2])
+
+			iwe[j,i] = point	
+            
+    print("Matrix: ")
+
+    for i in range(180):
+		for j in range(240):
+            print(iwe[j, i])
+
 def warped_event(events, tref, theta_x,theta_y):
     for i in range(len(events)):
         worped_e = pd.DataFrame(columns=['time', 'x', 'y'])
@@ -33,10 +61,9 @@ def events_to_image(event_list, dt):    # tutti gli eventi all'interno di dt ven
         cv2.imshow("image", image)
         i = i + dt
 
-
 # data = pd.read_csv('outdoors_walking/events.txt', header = None)
 df_chunk = pd.read_csv(r'outdoors_walking/events.txt', chunksize=4000000, sep="\s+", names=["timestamp", "x", "y", "p"])
 for chunk in df_chunk:
-    events_to_image(chunk.iloc[0:4000000, :], 2500)
+    #events_to_image(chunk.iloc[0:4000000, :], 2500)
     warped_event(chunk.iloc[0:Ne, :],0,0,0)
     break
